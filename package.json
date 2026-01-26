@@ -1,0 +1,30 @@
+{
+  "name": "wishlist-app",
+  "version": "1.0.0",
+  "description": "A web application for managing wishlist items.",
+  "main": "server/src/index.js",
+  "scripts": {
+    "start": "node server/src/index.js",
+    "dev": "nodemon server/src/index.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "format": "prettier --write \"**/*.{js,jsx,json,css,md,html}\""
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongoose": "^9.1.5"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  },
+  "overrides": {
+    "semver": "7.3.8"
+  },
+  "keywords": [
+    "wishlist",
+    "mongodb",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
