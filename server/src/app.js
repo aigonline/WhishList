@@ -27,10 +27,12 @@ app.get('/api/health', (req, res) => {
 const authRoutes = require('./routes/authRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const dealRoutes = require('./routes/dealRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/deals', dealRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Error handler
 const errorHandler = require('./middleware/errorHandler');

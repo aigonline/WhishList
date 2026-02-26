@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile - Wishlist</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <header class="bg-white border-b py-4">
+    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3"><img src="../images/logo.png" class="w-10 h-10"/><span class="font-bold text-xl">Wishlist</span></a>
+      <a href="login.html" class="text-yellow-500">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto p-6 mt-8">
+    <h1 class="text-2xl font-bold mb-4">Your Profile</h1>
+
+    <section class="bg-white shadow rounded-lg p-6 mb-6">
+      <form id="profileForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Name</label>
+          <input id="name" type="text" class="mt-1 block w-full border rounded-lg p-3" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input id="email" type="email" class="mt-1 block w-full border rounded-lg p-3" />
+        </div>
+        <div class="flex gap-3">
+          <button id="saveProfile" class="bg-gray-900 text-yellow-400 px-6 py-3 rounded-lg font-bold">Save</button>
+          <button id="cancelProfile" type="button" class="px-6 py-3 border rounded-lg">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Change Password</h2>
+      <form id="passwordForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Current Password</label>
+          <input id="currentPassword" type="password" class="mt-1 block w-full border rounded-lg p-3" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">New Password</label>
+          <input id="newPassword" type="password" class="mt-1 block w-full border rounded-lg p-3" />
+        </div>
+        <div class="flex gap-3">
+          <button id="changePassword" class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold">Change Password</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login.html';
+
+    const getAuthHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'application/json' });
+
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile', { headers: getAuthHeaders() });
+        if (!res.ok) throw new Error('Failed to load');
+        const user = await res.json();
+        document.getElementById('name').value = user.name || '';
+        document.getElementById('email').value = user.email || '';
+      } catch (err) {
+        console.error(err);
+        alert('Failed to load profile');
+      }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      try {
+        const res = await fetch('/api/profile', { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ name, email }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        localStorage.setItem('userEmail', data.user.email);
+        alert('Profile updated');
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'Error updating profile');
+      }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      try {
+        const res = await fetch('/api/profile/password', { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ currentPassword, newPassword }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        alert('Password changed');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'Error changing password');
+      }
+    });
+
+    document.getElementById('cancelProfile').addEventListener('click', () => loadProfile());
+
+    loadProfile();
+  </script>
+</body>
+</html>
