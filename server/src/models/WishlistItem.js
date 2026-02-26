@@ -14,6 +14,7 @@ const wishlistItemSchema = new mongoose.Schema({
     description: String,
     // cached fields for convenience
     title: String,
+    image: String,
     price: Number,
     category: String,
     note: String,

@@ -89,7 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <p class="text-sm text-gray-700 mb-3">${d.description || ''}</p>
                     <div class="flex items-center justify-between mb-4">
-                        <div class="text-2xl font-extrabold text-gray-900">${typeof d.price === 'number' ? '$' + d.price.toFixed(2) : ''}</div>
+                        <div class="flex items-center gap-2">
+                            ${typeof d.discountedPrice === 'number' ? `<span class="text-2xl font-extrabold text-gray-900">&#8358;${d.discountedPrice.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>${typeof d.originalPrice === 'number' ? `<span class="text-base text-gray-400 line-through">&#8358;${d.originalPrice.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : ''}` : typeof d.price === 'number' ? `<span class="text-2xl font-extrabold text-gray-900">&#8358;${d.price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : ''}
+                        </div>
                         <div class="text-sm text-gray-700">${renderStars(d.rating || 0)} <span class="ml-2 text-xs">${(d.rating || 0).toFixed(1)}</span></div>
                     </div>
                     <div class="text-sm text-gray-600 dark:text-gray-300 mb-4">Expires: <strong>${expiryText}</strong></div>
@@ -444,21 +446,27 @@ document.addEventListener('DOMContentLoaded', () => {
         wishlistContainer.innerHTML = '';
         items.forEach(item => {
             const itemElement = document.createElement('div');
-            itemElement.className = 'wishlist-item bg-yellow-400 rounded-2xl p-6 flex items-center justify-between shadow-md';
+            itemElement.className = 'wishlist-item bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden';
             itemElement.dataset.id = item._id || item.id || '';
             const title = item.title || (item.deal && item.deal.title) || item.name || 'Untitled';
-            const desc = item.description || (item.deal && item.deal.description) || '';
+            const imageSrc = item.image || (item.deal && (item.deal.image || item.deal.imageUrl || item.deal.image_url || item.deal.imagePath)) || item.imageUrl || null;
+            const price = typeof item.price === 'number' ? item.price : (item.deal && typeof item.deal.discountedPrice === 'number' ? item.deal.discountedPrice : (item.deal && typeof item.deal.price === 'number' ? item.deal.price : null));
+            const originalPrice = item.deal && typeof item.deal.originalPrice === 'number' ? item.deal.originalPrice : null;
             itemElement.innerHTML = `
-                <div class="flex items-center space-x-4 flex-1">
-                    <div class="w-16 h-16 flex items-center justify-center">
-                        <svg class="w-12 h-12 text-gray-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>
+                <div class="h-44 overflow-hidden relative bg-yellow-400 rounded-t-2xl">
+                    ${imageSrc ? `<img src="${imageSrc}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : ''}
+                </div>
+                <div class="p-5 flex items-center justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white truncate">${escapeHtml(title)}</h3>
+                        ${price !== null ? `
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="text-xl font-extrabold text-gray-900 dark:text-white">&#8358;${price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            ${originalPrice !== null ? `<span class="text-gray-400 line-through text-sm">&#8358;${originalPrice.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : ''}
+                        </div>` : ''}
                     </div>
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900">${title}</h3>
-                        <p class="text-sm text-gray-800">${desc}</p>
-                    </div>
-                    <button class="delete-button heart-icon ml-4" data-id="${item._id || item.id}">
-                        <svg class="w-8 h-8 text-gray-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <button class="delete-button heart-icon flex-shrink-0" data-id="${item._id || item.id}">
+                        <svg class="w-8 h-8 text-red-500 hover:text-red-600 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                     </button>
                 </div>
             `;
@@ -472,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteButtons = document.querySelectorAll('.delete-button');
         deleteButtons.forEach(button => {
             button.addEventListener('click', async (e) => {
-                const itemId = e.target.dataset.id;
+                const itemId = e.currentTarget.dataset.id;
                 await deleteWishlistItem(itemId);
             });
         });

@@ -3,7 +3,18 @@ const Deal = require('../models/Deal');
 
 exports.list = async (req, res) => {
   const items = await WishlistItem.find({ user: req.user._id }).populate('deal');
-  res.json(items);
+  // Enrich items with deal data in case cached fields are missing
+  const enriched = items.map(item => {
+    const obj = item.toObject();
+    const deal = obj.deal;
+    if (deal) {
+      if (!obj.title) obj.title = deal.title;
+      if (!obj.image) obj.image = deal.image || deal.imageUrl || null;
+      if (obj.price == null) obj.price = deal.discountedPrice ?? deal.price ?? null;
+    }
+    return obj;
+  });
+  res.json(enriched);
 };
 
 exports.add = async (req, res) => {
@@ -18,7 +29,8 @@ exports.add = async (req, res) => {
             user: req.user._id,
             deal: dealId,
             title: deal.title,
-            price: deal.price,
+            image: deal.image || deal.imageUrl || null,
+            price: deal.discountedPrice ?? deal.price ?? null,
             category: deal.category,
             note,
         });
@@ -37,11 +49,10 @@ exports.add = async (req, res) => {
 };
 
 exports.remove = async (req, res) => {
-  const id = req.params.id;
-  const item = await WishlistItem.findOne({ _id: id, user: req.user._id });
-  if (!item) return res.status(404).json({ message: 'Not found' });
-  await item.remove();
-  res.json({ message: 'Removed' });
+    const id = req.params.id;
+    const result = await WishlistItem.deleteOne({ _id: id, user: req.user._id });
+    if (result.deletedCount === 0) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Removed' });
 };
 
 // Create a new wishlist item
