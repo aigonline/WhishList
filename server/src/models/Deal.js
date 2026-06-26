@@ -11,6 +11,7 @@ const dealSchema = new mongoose.Schema({
   price: { type: Number }, // Legacy field for backward compatibility
   image: { type: String },
   imageUrl: { type: String }, // Preferred field name
+  dealLink: { type: String }, // Link to the original deal page
   available: { type: Number, default: 1 },
   location: { type: String },
   store: { type: String },

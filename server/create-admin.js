@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./src/models/User');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/wishlist';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/wishlist-app';
 
 async function createAdmin() {
   try {

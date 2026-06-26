@@ -94,11 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="text-sm text-gray-700">${renderStars(d.rating || 0)} <span class="ml-2 text-xs">${(d.rating || 0).toFixed(1)}</span></div>
                     </div>
-                    <div class="text-sm text-gray-600 dark:text-gray-300 mb-4">Expires: <strong>${expiryText}</strong></div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 mb-2">Expires: <strong>${expiryText}</strong></div>
+                    ${d.dealLink ? `<div class="text-sm text-gray-600 dark:text-gray-300 mb-4">Source: <a href="${escapeHtml(d.dealLink)}" target="_blank" rel="noopener noreferrer" class="text-yellow-600 dark:text-yellow-400 hover:underline inline-flex items-center gap-1 font-semibold">Deal link <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a></div>` : ''}
                     <div class="text-4xl font-black text-gray-900 mb-4 countdown-timer" data-end-time="${expires || ''}">--:--:--</div>
                     <div class="flex gap-3">
                         <button class="claim-button flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-xl transition-colors uppercase tracking-wide" data-deal-id="${d._id}">Claim</button>
-                        <button class="buy-button bg-gray-900 text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors">Buy</button>
+                        ${d.dealLink ? `<a href="${escapeHtml(d.dealLink)}" target="_blank" rel="noopener noreferrer" class="buy-button bg-gray-900 text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center">Buy</a>` : `<button class="buy-button bg-gray-900 text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors">Buy</button>`}
                         ${checkIfAdmin() ? `<a href="admin.html#edit-${d._id}" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-200 rounded-lg text-sm text-blue-600 hover:bg-blue-50">Edit</a>` : ''}
                     </div>
                 </div>
@@ -238,6 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onBuyClick(e) {
+        if (e.currentTarget.tagName.toLowerCase() === 'a') {
+            return; // Let the browser handle the hyperlink normally
+        }
         showToast('Checkout is a placeholder — integrate payments to complete.', 'info');
     }
 
@@ -452,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageSrc = item.image || (item.deal && (item.deal.image || item.deal.imageUrl || item.deal.image_url || item.deal.imagePath)) || item.imageUrl || null;
             const price = typeof item.price === 'number' ? item.price : (item.deal && typeof item.deal.discountedPrice === 'number' ? item.deal.discountedPrice : (item.deal && typeof item.deal.price === 'number' ? item.deal.price : null));
             const originalPrice = item.deal && typeof item.deal.originalPrice === 'number' ? item.deal.originalPrice : null;
+            const dealLink = item.deal && item.deal.dealLink;
             itemElement.innerHTML = `
                 <div class="h-44 overflow-hidden relative bg-yellow-400 rounded-t-2xl">
                     ${imageSrc ? `<img src="${imageSrc}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : ''}
@@ -463,6 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="mt-1 flex items-center gap-2">
                             <span class="text-xl font-extrabold text-gray-900 dark:text-white">&#8358;${price.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                             ${originalPrice !== null ? `<span class="text-gray-400 line-through text-sm">&#8358;${originalPrice.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>` : ''}
+                        </div>` : ''}
+                        ${dealLink ? `
+                        <div class="mt-2">
+                            <a href="${escapeHtml(dealLink)}" target="_blank" rel="noopener noreferrer" class="text-xs text-yellow-600 dark:text-yellow-400 hover:underline inline-flex items-center gap-1 font-semibold">
+                                Deal link <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
                         </div>` : ''}
                     </div>
                     <button class="delete-button heart-icon flex-shrink-0" data-id="${item._id || item.id}">
